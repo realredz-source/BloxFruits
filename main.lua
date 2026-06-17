@@ -1,8 +1,7 @@
 -- =========================================================
--- 🔴 REDZ HUB PREMIUM - IN-GAME KEY SYSTEM (V3 MAX - ANTI NIL)
+-- 🔴 REDZ HUB PREMIUM - IN-GAME KEY SYSTEM (V3 MAX)
 -- UI: Dark Neon + Avatar + Custom Notification
--- Feature: 1 Account = 1 Key
--- Script: Load dimondfarm.lua (Advanced Error Catcher)
+-- LỆNH GỐC ĐÍCH: dimondfarm.lua (Bọc thép chống văng)
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -18,7 +17,7 @@ local SaveFileName = "RedzHub_SavedKey.txt"
 local httprequest = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
 -- ==========================================
--- CLEANUP OLD UI
+-- DỌN DẸP UI CŨ
 -- ==========================================
 local guiParent = pcall(function() return gethui() end) and gethui() or CoreGui
 if not guiParent:FindFirstChild("RobloxGui") then guiParent = player:WaitForChild("PlayerGui") end
@@ -289,7 +288,6 @@ GetKeyBtn.MouseButton1Click:Connect(function()
     local url = API_URL .. "/?hwid=" .. MyHWID .. "&t=" .. tostring(math.floor(tick())) .. "&reset=1"
     if delfile and isfile(SaveFileName) then pcall(function() delfile(SaveFileName) end) end
     KeyInput.Text = ""
-
     local success = pcall(function() setclipboard(url) end)
     if success then
         ShowStatus("✅ Link Copied! 1 Account = 1 Key.", Color3.fromRGB(0, 255, 150))
@@ -312,6 +310,9 @@ local function FetchAPI(url)
     return success, body
 end
 
+-- ==========================================
+-- BỘ TẢI LỆNH GỐC ĐÃ ĐƯỢC CHỐNG LỖI (BẮT BỆNH DIMONDFARM)
+-- ==========================================
 local function ExecuteMainScript()
     Tween(MainFrame, {Position = UDim2.new(0.5, 0, 0.5, -20), BackgroundTransparency = 1}, 0.4)
     Tween(UIStroke, {Transparency = 1}, 0.3)
@@ -330,30 +331,26 @@ local function ExecuteMainScript()
     task.wait(0.5)
     ScreenGui:Destroy()
 
-    -- 🔥 BỘ PHẬN TẢI SCRIPT NÂNG CẤP (BẮT ĐƯỢC LỖI TỪ GITHUB) 🔥
     task.spawn(function() 
         repeat task.wait() until game:IsLoaded()
         task.wait(2) 
         
+        -- Gọi thẳng Lệnh Gốc Của Sếp Ở Đây:
         local targetUrl = "https://raw.githubusercontent.com/obiyeueim/99NIGH/refs/heads/main/dimondfarm.lua?t=" .. tostring(tick())
-        local success, result = pcall(function()
-            return game:HttpGet(targetUrl)
-        end)
         
-        if success and result and result ~= "" then
+        local success, result = pcall(function() return game:HttpGet(targetUrl) end)
+        
+        if success and result and result ~= "" and not string.find(result, "404: Not Found") then
             local func, loadErr = loadstring(result)
             if func then
                 local execSuccess, execErr = pcall(func)
-                if not execSuccess then
-                    warn("❌ LỖI KHI CHẠY SCRIPT: ", execErr)
-                end
+                if not execSuccess then warn("❌ LỖI KHI CHẠY DIMONDFARM: ", execErr) end
             else
-                -- In thẳng ra F9 nếu file Github bị lỗi cú pháp
-                warn("❌ LỖI CÚ PHÁP TỪ FILE GITHUB CỦA BẠN: ", loadErr)
-                print(">>> Vui lòng kiểm tra lại nội dung file 'dimondfarm.lua' trên Github. Có thể lúc nén code bị lỗi hoặc copy thiếu chữ.")
+                -- Nếu dimondfarm.lua bị lỗi cú pháp, nó sẽ báo vào F9 thay vì văng game.
+                warn("❌ FILE DIMONDFARM TRÊN GITHUB BỊ LỖI CÚ PHÁP: ", loadErr)
             end
         else
-            warn("❌ KHÔNG THỂ TẢI FILE (Link Github sai hoặc mất mạng)")
+            warn("❌ KHÔNG THỂ TẢI ĐƯỢC DIMONDFARM TỪ GITHUB!")
         end
     end)
 end
@@ -361,7 +358,6 @@ end
 local function DoVerify()
     local rawText = tostring(KeyInput.Text)
     local cleanText = rawText:gsub("[%c%s]", ""):upper()
-    
     Tween(VerifyBtn, {Size = UDim2.new(0.46, -4, 0, 36)}, 0.1)
     task.wait(0.1)
     Tween(VerifyBtn, {Size = UDim2.new(0.46, 20, 0, 40)}, 0.1)
@@ -373,7 +369,6 @@ local function DoVerify()
 
     local inputKey = string.match(cleanText, "REDZ%-[%w%-]+")
     local cleanHwid = MyHWID:gsub("[%c%s]", ""):upper()
-    
     if not inputKey then
         ShowStatus("⚠️ Invalid Key! Format must be REDZ-...", Color3.fromRGB(255, 180, 0))
         return
@@ -411,9 +406,6 @@ end
 
 VerifyBtn.MouseButton1Click:Connect(DoVerify)
 
--- ==========================================
--- AUTO VERIFY
--- ==========================================
 task.spawn(function()
     if isfile and isfile(SaveFileName) then
         pcall(function() 
